@@ -1,0 +1,75 @@
+---
+title: "example 1"
+output: html_notebook
+---
+```{r}
+
+library(car)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(rstatix)
+library(janitor)
+```
+
+```{r}
+getwd()
+data1 <- read.csv("Three Substrate Sterilization.csv")  
+
+
+
+data1 <- data1 %>% clean_names()  
+
+
+colnames(data1)
+
+
+summary_stats <- data1 %>%
+  group_by(sterilization_method) %>%
+  dplyr::summarise(
+    N = dplyr::n(),
+    Mean = mean(mushroom_production, na.rm = TRUE),
+    SD = sd(mushroom_production, na.rm = TRUE),
+    SE = SD / sqrt(N),
+    CI_lower = Mean - qt(0.975, N - 1) * SE,
+    CI_upper = Mean + qt(0.975, N - 1) * SE,
+    .groups = "drop"
+  )
+
+print(summary_stats)
+
+#ANOVA
+anova_model <- aov(mushroom_production ~ sterilization_method, data = data1)
+summary(anova_model)
+
+# Normality of residuals
+shapiro.test(residuals(anova_model))
+qqnorm(residuals(anova_model)); qqline(residuals(anova_model))
+
+# Homogeneity of variance
+leveneTest(mushroom_production ~ sterilization_method, data = data1)
+# Tukey HSD post-hoc test
+
+tukey <- TukeyHSD(anova_model)
+print(tukey)
+
+
+means <- data1 %>%
+  dplyr::group_by(sterilization_method) %>%
+  dplyr::summarise(
+    mean_prod = mean(mushroom_production, na.rm = TRUE)
+  )
+#Box plot
+ggplot(data1, aes(x = sterilization_method, y = mushroom_production, fill = sterilization_method)) +
+  geom_boxplot(alpha = 0.7) +
+  geom_point(data = means, aes(x = sterilization_method, y = mean_prod),
+             color = "red", size = 3, inherit.aes = FALSE) +
+  theme_minimal() +
+  labs(
+    title = "Mushroom Production by Sterilization Method",
+    x = "Sterilization Method",
+    y = "Mushroom Production (Kg)"
+  ) +
+  theme(legend.position = "none")
+
+```

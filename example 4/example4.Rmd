@@ -1,0 +1,101 @@
+---
+title: "example 4"
+author: "Darshini Parekh"
+date: "2025-12-07"
+output: pdf_document
+---
+
+```{r}
+library(dplyr)
+```
+
+
+
+```{r}
+getwd()
+setwd("C:/Users/darsh/Downloads")
+data4<-read.csv("Nucleic Acid (NA) Extraction in Yeast Cells.csv")
+data4
+```
+
+
+
+```{r}
+mean(data4$Extracc)
+
+```
+```{r}
+data4$pH <- factor(data4$pH)
+data4$Temp <- factor(data4$Temp)
+
+data4 %>% group_by(pH) %>%
+  summarise(
+    N = n(),
+    Mean = mean(Extracc),
+    SD = sd(Extracc)
+  )
+
+# Descriptive stats by Temperature
+data4 %>% group_by(Temp) %>%
+  summarise(
+    N = n(),
+    Mean = mean(Extracc),
+    SD = sd(Extracc)
+  )
+
+# Descriptive stats by pH × Temperature interaction
+data4 %>% group_by(pH, Temp) %>%
+  summarise(
+    N = n(),
+    Mean = mean(Extracc),
+    SD = sd(Extracc)
+  )
+```
+```{r}
+anova_model <- aov(Extracc ~ pH * Temp, data = data4)
+summary(anova_model)
+
+
+
+shapiro.test(residuals(anova_model))
+qqnorm(residuals(anova_model)); qqline(residuals(anova_model))
+
+library(car)
+leveneTest(Extracc ~ pH * Temp, data = data4)
+
+
+```
+```{r}
+library(ggplot2)
+
+ggplot(data4, aes(x = pH, y = Extracc, color = Temp, group = Temp)) +
+  stat_summary(fun = mean, geom = "line", size = 1.2) +
+  stat_summary(fun = mean, geom = "point", size = 3) +
+  theme_minimal() +
+  labs(title = "Interaction Plot: pH × Temperature")
+
+
+
+df <- data.frame(
+  group = c("3", "10", "12"),
+  mean  = c(16.33, 40.25, 64.45),
+  sd    = c(6.53, 17.76, 27.13)
+)
+
+ggplot(df, aes(x = group, y = mean)) +
+  geom_col(fill = "lightgreen") +
+  geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd),
+                width = 0.2, linewidth = 0.8) +
+  theme_minimal() +
+  labs(title = "Mean ± SD Bar Plot",
+       y = "Value")
+
+
+```
+```{r}
+TukeyHSD(anova_model, "pH")
+TukeyHSD(anova_model, "Temp")
+TukeyHSD(anova_model, "pH:Temp")
+
+```
+

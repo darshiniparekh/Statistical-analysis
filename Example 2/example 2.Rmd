@@ -1,0 +1,103 @@
+---
+title: "example 2"
+author: "Darshini Parekh"
+date: "2025-06-09"
+output: html_document
+---
+
+```{r}
+library(car)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(emmeans)
+```
+
+loading the data 
+```{r}
+example2_data<-read.csv("Effect of Glucose.csv")
+example2_data
+```
+
+mean and stenderd deviation
+
+```{r}
+str(example2_data)
+mean(example2_data$Biomass)
+sd(example2_data$Biomass)
+
+```
+
+```{r}
+
+example2_data$Block <- factor(example2_data$Block)
+example2_data$Treatment.Glucose <- factor(example2_data$Treatment.Glucose)
+table(example2_data$Block)
+table(example2_data$Glucose)
+```
+Anova
+```{r}
+
+
+model <- lm(Biomass ~ Block * Treatment.Glucose, data = example2_data)
+summary(model)
+
+Anova(model, type = "III")
+```
+Descriptive statistics
+```{r}
+
+example2_data %>%
+  group_by(Treatment.Glucose) %>%
+  summarise(N = n(),
+            Mean = mean(Biomass),
+            SD = sd(Biomass))
+
+example2_data %>%
+  group_by(Block) %>%
+  summarise(N = n(),
+            Mean = mean(Biomass),
+            SD = sd(Biomass))
+
+example2_data %>%
+  group_by(Treatment.Glucose, Block) %>%
+  summarise(Mean = mean(Biomass),
+            SE = sd(Biomass)/sqrt(n()),
+            .groups = "drop")
+
+#Post hoc Tukey test for Glucose
+emmeans(model, pairwise ~ Treatment.Glucose, adjust = "tukey")
+
+
+
+
+sum_biomass <- example2_data %>%
+  group_by( Treatment.Glucose, Block) %>%
+  summarise(
+    N = n(),
+    Mean = mean(Biomass, na.rm = TRUE),
+    SD = sd(Biomass, na.rm = TRUE),
+    SE = SD / sqrt(N),
+    .groups = "drop"
+  )
+
+sum_biomass
+
+ggplot(sum_biomass, aes(x = Treatment.Glucose, y = Mean, fill = Block)) +
+  geom_col(position = position_dodge(0.9)) +
+  geom_errorbar(
+    aes(ymin = Mean - SE, ymax = Mean + SE),
+    width = 0.2,
+    position = position_dodge(0.9)
+  ) +
+  labs(
+    title = "Biomass by Glucose Level and Block",
+    x = "Glucose Level (g/L)",
+    y = "Mean Biomass (g/L)"
+  ) +
+  theme_classic()
+```
+
+
+
+

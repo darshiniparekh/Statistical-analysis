@@ -1,0 +1,172 @@
+---
+title: "example 3"
+author: "Darshini Parekh"
+date: "2025-12-08"
+output: pdf_document
+---
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(car)
+```
+
+
+
+```{r}
+getwd()
+setwd("C:/Users/darsh/Downloads")
+data3 <- read.csv("bread dough.csv")
+data3
+# Convert to factors
+data3$Temp <- factor(data3$Temp)
+data3$Humidity   <- factor(data3$Humidity)
+str(data3)
+```
+
+
+
+```{r}
+summary_temp <- data3 %>%
+  group_by(Temp) %>%
+  summarise(
+    N = n(),
+    Mean = mean(Tiempo),
+    SD = sd(Tiempo)
+  )
+
+summary_hr <- data3 %>%
+  group_by(Humidity) %>%
+  summarise(
+    N = n(),
+    Mean = mean(Tiempo),
+    SD = sd(Tiempo)
+  )
+
+summary_interaction <- data3 %>%
+  group_by(Temp, Humidity) %>%
+  summarise(
+    N = n(),
+    Mean = mean(Tiempo),
+    SD = sd(Tiempo)
+  )
+
+
+```
+
+```{r}
+anova_model <- aov(Tiempo ~ Temp * Humidity, data = data3)
+summary(anova_model)
+shapiro.test(residuals(anova_model))
+qqnorm(residuals(anova_model)); qqline(residuals(anova_model))
+leveneTest(Tiempo ~ Temp * Humidity, data = data3)
+data3$group <- interaction(data3$Temp, data3$Humidity)
+
+tukey <- TukeyHSD(aov(Tiempo ~ group, data = data3))
+print(tukey)
+
+TukeyHSD(anova_model, "Temp")
+TukeyHSD(anova_model, "Humidity")
+TukeyHSD(anova_model, "Temp:Humidity")
+
+str(data3)
+
+```
+plots
+
+
+```{r}
+ggplot(data3, aes(x = Temp, y = Tiempo, color = Humidity, group = Humidity)) +
+  stat_summary(fun = mean, geom = "line", linewidth = 1.2) +
+  stat_summary(fun = mean, geom = "point", size = 3) +
+  scale_y_reverse() +   # flip Y axis so lower time appears higher = visually better
+  theme_minimal() +
+  labs(
+    title = "Interaction Plot: Effect of Temperature and Humidity on Rise Time",
+    x = "Temperature (°C)",
+    y = "Mean Rise Time — Tiempo (min)",
+    color = "Humidity (%)"
+  )
+summary_interaction <- data3 %>%
+  group_by(Temp, Humidity) %>%
+  summarise(
+    N    = n(),
+    Mean = mean(Tiempo),
+    SD   = sd(Tiempo),
+    SE   = SD / sqrt(N),
+    .groups = "drop"
+  )
+
+ggplot(summary_interaction, 
+       aes(x = factor(Temp), y = Mean, fill = factor(Humidity))) +
+  geom_col(position = position_dodge(0.9)) +
+  geom_errorbar(
+    aes(ymin = Mean - SD, ymax = Mean + SD),
+    position = position_dodge(0.9),
+    width = 0.2
+  ) +
+  scale_fill_brewer(palette = "Blues", direction = -1) +
+  coord_cartesian(ylim = c(150, 205)) +  # zoom in to show differences clearly
+  theme_minimal() +
+  labs(
+    title = "Mean Rise Time by Temperature and Humidity",
+    x     = "Temperature (°C)",
+    y     = "Mean Rise Time — Tiempo (min)",
+    fill  = "Humidity (%)",
+    caption = "Lower bars = faster rise = better fermentation condition"
+  )
+
+# Temperature main effect
+ggplot(summary_temp, aes(x = Temp, y = Mean)) +
+  geom_col(fill = "steelblue", width = 0.5) +
+  geom_errorbar(aes(ymin = Mean - SD, ymax = Mean + SD),
+                width = 0.2, linewidth = 0.8) +
+  coord_cartesian(ylim = c(170, 200)) +
+  theme_minimal() +
+  labs(
+    title   = "Effect of Temperature on Mean Rise Time",
+    x       = "Temperature (°C)",
+    y       = "Mean Rise Time — Tiempo (min)",
+    caption = "Lower bar = faster rise"
+  )
+
+
+# Humidity main effect
+ggplot(summary_hr, aes(x = Humidity, y = Mean)) +
+  geom_col(fill = "seagreen", width = 0.5) +
+  geom_errorbar(aes(ymin = Mean - SD, ymax = Mean + SD),
+                width = 0.2, linewidth = 0.8) +
+  coord_cartesian(ylim = c(170, 200)) +
+  theme_minimal() +
+  labs(
+    title   = "Effect of Humidity on Mean Rise Time",
+    x       = "Relative Humidity (%)",
+    y       = "Mean Rise Time — Tiempo (min)",
+    caption = "Lower bar = faster rise"
+  )
+# Temperature main effect
+ggplot(summary_hr, aes(x = Temp, y = Mean)) +
+  geom_col(fill = "steelblue", width = 0.5) +
+  geom_errorbar(aes(ymin = Mean - SD, ymax = Mean + SD),
+                width = 0.2, linewidth = 0.8) +
+  coord_cartesian(ylim = c(170, 200)) +
+  theme_minimal() +
+  labs(
+    title   = "Effect of Temperature on Mean Rise Time",
+    x       = "Relative Temperature (%)",
+    y       = "Mean Rise Time — Tiempo (min)",
+    caption = "Lower bar = faster rise"
+  )
+ggplot(data3, aes(x = interaction(Temp, Humidity, sep = "°C × "),
+                  y = Tiempo,
+                  fill = factor(Humidity))) +
+  geom_boxplot(alpha = 0.7) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(
+    title = "Distribution of Rise Time by Treatment Combination",
+    x     = "Temperature × Humidity",
+    y     = "Rise Time — Tiempo (min)",
+    fill  = "Humidity (%)"
+  )
+```
