@@ -1,9 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[2]:
-
-
 import pandas as pd
 import scipy.stats as stats
 import statsmodels.api as sm
@@ -11,10 +5,6 @@ from statsmodels.formula.api import ols
 from statsmodels.stats.multicomp import pairwise_tukeyhsd
 import matplotlib.pyplot as plt
 import re
-
-
-# In[4]:
-
 
 from pathlib import Path
 
@@ -26,36 +16,19 @@ data.columns = [re.sub(r"\s+", "_", col.strip().lower()) for col in data.columns
 print(data.head())
 print(data.columns)
 
-
-# In[6]:
-
-
-
 data['treatment'] = data['temp'].astype(str) + "_" + data['humidity'].astype(str)
 
 for name, group in data.groupby('treatment'):
     stat, p = stats.shapiro(group['tiempo'])
     print(f"{name}: W={stat:.3f}, p={p:.4f}")
 
-
-# In[8]:
-
-
 groups = [group['tiempo'].values for name, group in data.groupby('treatment')]
 stat, p = stats.levene(*groups)
 print(f"Levene's test: W={stat:.3f}, p={p:.4f}")
 
-
-# In[10]:
-
-
 model = ols('tiempo ~ C(temp) * C(humidity)', data=data).fit()
 anova_table = sm.stats.anova_lm(model, typ=2)
 print(anova_table)
-
-
-# In[12]:
-
 
 tukey = pairwise_tukeyhsd(
     endog=data['tiempo'],
@@ -63,10 +36,6 @@ tukey = pairwise_tukeyhsd(
     alpha=0.05
 )
 print(tukey.summary())
-
-
-# In[13]:
-
 
 import seaborn as sns
 
