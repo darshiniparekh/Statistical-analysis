@@ -11,10 +11,10 @@ immersion in water:1000 liters of water are heated to 90°C in a stainless steel
 . Semi-composting and pasteurization: the wheat straw is moistened to 80% and kept at that moisture level for 5 days, during which it is aerated twice a day. Afterward, the semi-composted straw is placed in the pasteurization chamber, where it remains for 10 hours at 65°C. After this, the straw is allowed to cool and is drained to a moisture content of 70%.
 
 ##Design:
--Factour: Sterilization Methods (3 types - Vapour, Submerged and semicomposting)
--Response Variable: Mushroom Production in Kg
--Sample Size: n=45 per group totelling to N=135
--Design: One way ANOVA
+- Factour: Sterilization Methods (3 types - Vapour, Submerged and semicomposting)
+- Response Variable: Mushroom Production in Kg
+- Sample Size: n=45 per group totelling to N=135
+- Design: One way ANOVA
 
 ##Statistical Analysis
 - One-way ANOVA
