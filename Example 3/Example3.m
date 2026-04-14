@@ -1,4 +1,4 @@
->> %% ── 1. Load data ──────────────────────────────────────────────────────────
+%% ── 1. Load data ──────────────────────────────────────────────────────────
 data = readtable('bread dough.csv');
 head(data)
 disp(data.Properties.VariableNames)
@@ -12,15 +12,14 @@ disp('=== Descriptive stats by Humidity ===')
 grpstats(data, 'Humidity', {'mean','std'}, 'DataVars', 'Time')
 disp('=== Descriptive stats by Temperature x Humidity ===')
 grpstats(data, {'Temp','Humidity'}, {'mean','std'}, 'DataVars', 'Time')
->> %% ── 4. Two-way ANOVA with interaction ─────────────────────────────────────
+%% ── 4. Two-way ANOVA with interaction ─────────────────────────────────────
 disp('=== Two-Way ANOVA ===')
 [p, tbl, stats] = anovan(data.Time, ...
    {data.Temp, data.Humidity}, ...
    'model',    'interaction', ...
    'varnames', {'Temperature', 'Humidity'}, ...
    'display',  'on');
-=== Two-Way ANOVA ===
->> %% ── 5. Assumption checks ──────────────────────────────────────────────────
+%% ── 5. Assumption checks ──────────────────────────────────────────────────
 % --- 5a. Extract residuals from linear model ---
 lm_model      = fitlm(data, 'Time ~ Temp * Humidity');
 residuals_vec = lm_model.Residuals.Raw;
@@ -59,7 +58,7 @@ if p_levene > 0.05
 else
    fprintf('Result: Variances are NOT homogeneous (p < 0.05)\n')
 end
->> %% ── 6. Post-hoc Tukey HSD ─────────────────────────────────────────────────
+%% ── 6. Post-hoc Tukey HSD ─────────────────────────────────────────────────
 % --- 6a. Temperature main effect ---
 disp('=== Tukey HSD: Temperature main effect ===')
 [c_Temp, ~, ~, gnames_Temp] = multcompare(stats, ...
@@ -109,7 +108,7 @@ for i = 1:size(c_int, 1)
            c_int(i,4), c_int(i,6))
    end
 end
->> %% ── 7. Interaction plot ───────────────────────────────────────────────────
+%% ── 7. Interaction plot ───────────────────────────────────────────────────
 figure;
 interactionplot(data.Time, {data.Temp, data.Humidity}, ...
    'varnames', {'Temperature', 'Humidity'});
@@ -129,7 +128,7 @@ ylabel('Mean Rise Time (Time)');
 title('Mean +/- SD by Temperature');
 grid on;
 hold off;
->> %% ── 9. Mean +/- SD bar chart by Humidity ─────────────────────────────────
+ %% ── 9. Mean +/- SD bar chart by Humidity ─────────────────────────────────
 hum_levels = {'70%', '75%', '80%'};
 means_hum  = [191.80, 187.00, 178.40];
 sds_hum    = [8.12,   12.34,  18.56];     
@@ -142,7 +141,7 @@ ylabel('Mean Rise Time (Time)');
 title('Mean +/- SD by Humidity');
 grid on;
 hold off;
->> %% ── 10. Boxplot by Temperature and Humidity ───────────────────────────────
+%% ── 10. Boxplot by Temperature and Humidity ───────────────────────────────
 figure;
 boxplot(data.Time, {data.Temp, data.Humidity}, ...
    'Labels', {'25-70','25-75','25-80', ...
