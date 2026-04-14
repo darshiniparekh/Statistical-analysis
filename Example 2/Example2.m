@@ -3,7 +3,6 @@ data = readtable('Effect of Glucose.csv');
 head(data)
 disp(data.Properties.VariableNames)
 %% ── 2. Standardise column names if needed ─────────────────────────────────
-% Rename to consistent names - adjust if your CSV headers differ
 data.Properties.VariableNames{'Blocks'}              = 'Block';
 data.Properties.VariableNames{'Treatment_Glucose'}  = 'Glucose';
 data.Properties.VariableNames{'Biomass'}            = 'Biomass';
@@ -18,7 +17,6 @@ grpstats(data, 'Block', {'mean','std'}, 'DataVars', 'Biomass')
 disp('=== Descriptive stats by Glucose x Block ===')
 grpstats(data, {'Glucose','Block'}, {'mean','std'}, 'DataVars', 'Biomass')
 %% ── 5. Two-way ANOVA with interaction ─────────────────────────────────────
-% This now matches R's Anova(model, type="III") exactly
 disp('=== Two-Way ANOVA (Type III) ===')
 [p, tbl, stats] = anovan(data.Biomass, ...
    {data.Block, data.Glucose}, ...
