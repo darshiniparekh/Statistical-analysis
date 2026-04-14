@@ -1,6 +1,5 @@
 >> %% ── 1. Load data ──────────────────────────────────────────────────────────
 data = readtable('bread dough.csv');
-% Preview to confirm columns loaded correctly
 head(data)
 disp(data.Properties.VariableNames)
 %% ── 2. Convert to categorical ─────────────────────────────────────────────
@@ -8,14 +7,14 @@ data.Temp     = categorical(data.Temp);
 data.Humidity = categorical(data.Humidity);
 %% ── 3. Descriptive statistics ─────────────────────────────────────────────
 disp('=== Descriptive stats by Temperature ===')
-grpstats(data, 'Temp', {'mean','std'}, 'DataVars', 'Tiempo')
+grpstats(data, 'Temp', {'mean','std'}, 'DataVars', 'Time')
 disp('=== Descriptive stats by Humidity ===')
-grpstats(data, 'Humidity', {'mean','std'}, 'DataVars', 'Tiempo')
+grpstats(data, 'Humidity', {'mean','std'}, 'DataVars', 'Time')
 disp('=== Descriptive stats by Temperature x Humidity ===')
-grpstats(data, {'Temp','Humidity'}, {'mean','std'}, 'DataVars', 'Tiempo')
+grpstats(data, {'Temp','Humidity'}, {'mean','std'}, 'DataVars', 'Time')
 >> %% ── 4. Two-way ANOVA with interaction ─────────────────────────────────────
 disp('=== Two-Way ANOVA ===')
-[p, tbl, stats] = anovan(data.Tiempo, ...
+[p, tbl, stats] = anovan(data.Time, ...
    {data.Temp, data.Humidity}, ...
    'model',    'interaction', ...
    'varnames', {'Temperature', 'Humidity'}, ...
@@ -23,7 +22,7 @@ disp('=== Two-Way ANOVA ===')
 === Two-Way ANOVA ===
 >> %% ── 5. Assumption checks ──────────────────────────────────────────────────
 % --- 5a. Extract residuals from linear model ---
-lm_model      = fitlm(data, 'Tiempo ~ Temp * Humidity');
+lm_model      = fitlm(data, 'Time ~ Temp * Humidity');
 residuals_vec = lm_model.Residuals.Raw;
 % --- 5b. Normal probability plot ---
 figure;
@@ -39,19 +38,19 @@ else
    fprintf('Result: Residuals are approximately normal (p >= 0.05)\n')
 end
 % --- 5d. Per-group Shapiro-Wilk equivalent (Lilliefors per group) ---
-% This matches Python's per-group shapiro.test
+
 disp('=== Per-group normality tests ===')
 group_labels = categorical(strcat(string(data.Temp), '_', string(data.Humidity)));
 groups       = unique(group_labels);
 for i = 1:length(groups)
    idx        = group_labels == groups(i);
-   group_data = data.Tiempo(idx);
+   group_data = data.Time(idx);
    [h_g, p_g] = lillietest(group_data);
    fprintf('Group %s: h = %d, p = %.4f\n', string(groups(i)), h_g, p_g)
 end
 % --- 5e. Levene homogeneity of variance test ---
 figure;
-p_levene = vartestn(data.Tiempo, group_labels, ...
+p_levene = vartestn(data.Time, group_labels, ...
    'TestType', 'LeveneAbsolute', ...
    'Display',  'on');
 fprintf('\nLevene test p-value: %.4f\n', p_levene)
@@ -90,7 +89,7 @@ Hum_table = array2table(c_Hum, ...
 disp(Hum_table)
 % --- 6c. Interaction (Temperature x Humidity) ---
 disp('=== Tukey HSD: Temperature x Humidity interaction ===')
-[p2, tbl2, stats2] = anovan(data.Tiempo, ...
+[p2, tbl2, stats2] = anovan(data.Time, ...
    {group_labels}, ...
    'model',    'linear', ...
    'varnames', {'Temp_Humidity'}, ...
@@ -112,44 +111,45 @@ for i = 1:size(c_int, 1)
 end
 >> %% ── 7. Interaction plot ───────────────────────────────────────────────────
 figure;
-interactionplot(data.Tiempo, {data.Temp, data.Humidity}, ...
+interactionplot(data.Time, {data.Temp, data.Humidity}, ...
    'varnames', {'Temperature', 'Humidity'});
 title('Interaction Plot: Temperature x Humidity');
 xlabel('Temperature (°C)');
-ylabel('Mean Rise Time (Tiempo)');
+ylabel('Mean Rise Time (Time)');
 >> %% ── 8. Mean +/- SD bar chart by Temperature ──────────────────────────────
 temp_levels = {'25°C', '28°C', '32°C'};
 means_temp  = [192.87, 181.93, 182.40];
-sds_temp    = [9.45,   14.23,  15.67];    % replace with your actual SD values
+sds_temp    = [9.45,   14.23,  15.67];    
 figure;
 bar(1:3, means_temp, 'FaceColor', [0.53 0.81 0.98]);
 hold on;
 errorbar(1:3, means_temp, sds_temp, 'k.', 'LineWidth', 1.2);
 set(gca, 'XTick', 1:3, 'XTickLabel', temp_levels);
-ylabel('Mean Rise Time (Tiempo)');
+ylabel('Mean Rise Time (Time)');
 title('Mean +/- SD by Temperature');
 grid on;
 hold off;
 >> %% ── 9. Mean +/- SD bar chart by Humidity ─────────────────────────────────
 hum_levels = {'70%', '75%', '80%'};
 means_hum  = [191.80, 187.00, 178.40];
-sds_hum    = [8.12,   12.34,  18.56];     % replace with your actual SD values
+sds_hum    = [8.12,   12.34,  18.56];     
 figure;
 bar(1:3, means_hum, 'FaceColor', [0.6 0.8 0.6]);
 hold on;
 errorbar(1:3, means_hum, sds_hum, 'k.', 'LineWidth', 1.2);
 set(gca, 'XTick', 1:3, 'XTickLabel', hum_levels);
-ylabel('Mean Rise Time (Tiempo)');
+ylabel('Mean Rise Time (Time)');
 title('Mean +/- SD by Humidity');
 grid on;
 hold off;
 >> %% ── 10. Boxplot by Temperature and Humidity ───────────────────────────────
 figure;
-boxplot(data.Tiempo, {data.Temp, data.Humidity}, ...
+boxplot(data.Time, {data.Temp, data.Humidity}, ...
    'Labels', {'25-70','25-75','25-80', ...
               '28-70','28-75','28-80', ...
               '32-70','32-75','32-80'});
 xlabel('Temperature - Humidity');
-ylabel('Rise Time (Tiempo)');
+ylabel('Rise Time (Time)');
 title('Boxplot: Rise Time by Temperature and Humidity');
 grid on;
+
