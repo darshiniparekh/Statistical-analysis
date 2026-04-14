@@ -1,4 +1,4 @@
->> %% ── 1. Load data ──────────────────────────────────────────────────────────
+%% ── 1. Load data ──────────────────────────────────────────────────────────
 data = readtable('Three Substrate Sterilization.csv');
 % Show what MATLAB named the columns (may differ from CSV headers)
 disp(data.Properties.VariableNames)
@@ -34,10 +34,7 @@ end
 disp('=== One-Way ANOVA ===')
 [p, tbl, stats] = anova1(data.Production, data.Method, 'on');
 fprintf('\nANOVA p-value: %.6e\n', p)
-=== One-Way ANOVA ===
-
-ANOVA p-value: 1.531582e-22
->> %% ── 6. Assumption checks ──────────────────────────────────────────────────
+%% ── 6. Assumption checks ──────────────────────────────────────────────────
 % --- 6a. Extract residuals ---
 lm_model      = fitlm(data, 'Production ~ Method');
 residuals_vec = lm_model.Residuals.Raw;
